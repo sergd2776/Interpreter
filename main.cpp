@@ -3115,6 +3115,9 @@ bool Parser::Choice_Instruction(bool& ret) {
     if (!Expression(a)) {
         return false;
     }
+    if (a > 10){
+        throw "Invalid type of if-statement expression";
+    }
     if (!HasLexeme() || check_information[lexeme_pointer].type != LexemRightParenthesis) {
         error.second = "')'";
         error.first = check_information[lexeme_pointer];
@@ -3155,18 +3158,27 @@ bool Parser::Cyclic_Instruction(bool& ret) {
         return false;
     }
     if (check_information[lexeme_pointer].type == LexemWhile){
+        cyclic_instruction_start = commands.size();
         lexeme_pointer++;
         if (HasLexeme() && check_information[lexeme_pointer].type == LexemLeftParenthesis){
             lexeme_pointer++;
             if (Expression(a) && HasLexeme() && check_information[lexeme_pointer].type == LexemRightParenthesis){
+                int saved_clear_place = commands.size();
                 lexeme_pointer++;
+                commands.emplace_back();
+                commands.emplace_back(new If());
                 if (Instruction(ret)){
+                    commands.emplace_back(new Push(cyclic_instruction_start));
+                    commands.emplace_back(new Goto());
+                    commands[saved_clear_place].reset(new Push(commands.size()));
+                    //TODO Make points for cycles
                     return true;
                 }
             }
         }
     }
     else if (check_information[lexeme_pointer].type == LexemDo){
+        throw "Do cycle is not implemented yet";
         lexeme_pointer++;
         if (Instruction(ret) && HasLexeme() && check_information[lexeme_pointer].type == LexemWhile){
             lexeme_pointer++;
