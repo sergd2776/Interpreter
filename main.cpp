@@ -1152,8 +1152,9 @@ private:
     Function fun;
     std::vector <std::shared_ptr<Commander>> commands;
     std::map <std::string, Function> function_table;
-    int cyclic_instruction_start = 0, cyclic_instruction_end = 0;
+    int cyclic_instruction_start = -1;
     bool func_def_flag = false;
+    std::queue <int> break_list = {};
     Type_Table type_table;
     bool HasLexeme();
     int CreateType(const std::string name, int point_to, int pointer_degree){
@@ -3171,14 +3172,18 @@ bool Parser::Cyclic_Instruction(bool& ret) {
                     commands.emplace_back(new Push(cyclic_instruction_start));
                     commands.emplace_back(new Goto());
                     commands[saved_clear_place].reset(new Push(commands.size()));
-                    //TODO Make points for cycles
+                    cyclic_instruction_start = -1;
+                    while (!break_list.empty()){
+                        commands[break_list.front()].reset(new Push(commands.size()));
+                        break_list.pop();
+                    }
                     return true;
                 }
             }
         }
     }
     else if (check_information[lexeme_pointer].type == LexemDo){
-        throw "Do cycle is not implemented yet";
+        throw "\"Do-while\" cycle is not implemented yet";
         lexeme_pointer++;
         if (Instruction(ret) && HasLexeme() && check_information[lexeme_pointer].type == LexemWhile){
             lexeme_pointer++;
@@ -3255,7 +3260,7 @@ bool Parser::Transfer_Instruction(bool& ret) {
         lexeme_pointer++;
         if (HasLexeme() && check_information[lexeme_pointer].type == LexemSemicolon){
             lexeme_pointer++;
-            if (cyclic_instruction_start == 0){
+            if (cyclic_instruction_start == -1){
                 throw "Using \"continue\" not in the cyclic instruction";
             }
             commands.emplace_back(new Push(cyclic_instruction_start));
@@ -3267,10 +3272,11 @@ bool Parser::Transfer_Instruction(bool& ret) {
         lexeme_pointer++;
         if (HasLexeme() && check_information[lexeme_pointer].type == LexemSemicolon){
             lexeme_pointer++;
-            if (cyclic_instruction_end == 0){
+            if (cyclic_instruction_start == -1){
                 throw "Using \"break\" not in the cyclic instruction";
             }
-            commands.emplace_back(new Push(cyclic_instruction_end));
+            break_list.push(commands.size());
+            commands.emplace_back();
             commands.emplace_back(new Goto());
             return true;
         }
