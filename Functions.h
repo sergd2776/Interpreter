@@ -14,7 +14,8 @@ private:
     std::map <std::string, int> var_table;
     std::map <std::string, int> type_matching_table;
     std::map <std::string, std::tuple <int, std::queue <int>, bool>> var_parameters;
-    int arguments_number, enter_point, exit_point, return_type, address_space_point;
+    int arguments_number, enter_point, return_type, address_space_point;
+    int exit_point = -1;
     std::string name;
 public:
     std::vector <std::string> fun_parameters;

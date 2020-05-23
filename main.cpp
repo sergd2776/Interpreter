@@ -1103,7 +1103,7 @@ public:
         error.first.value = "end of file";
         lexeme_pointer = 0;
         file_name = sourceFileName;
-        commands = {};
+        commands.emplace_back(new Call("main"));
     }
     ~Parser() = default;
 
@@ -1138,6 +1138,12 @@ public:
         }
     }
 
+    std::vector <std::shared_ptr<Commander>>& get_commands(){
+        return commands;
+    }
+    std::map <std::string, Function>& get_function_table(){
+        return function_table;
+    }
 private:
     std::vector <Lexeme> check_information;
     std::pair <Lexeme, std::string> error;
@@ -2984,7 +2990,7 @@ bool Parser::Expression_Instruction() {
     if (!Expression(a)){
         lexeme_pointer = saved_lexeme_pointer;
     }
-    else{
+    else if (a != 0){
         commands.emplace_back(new Pop());
     }
     if (!HasLexeme()){
@@ -3258,10 +3264,42 @@ bool Parser::Transfer_Instruction(bool& ret) {
         error.first = check_information[lexeme_pointer];
         return false;
     }
+    commands.emplace_back(new Return());
     ret = true;
     lexeme_pointer++;
     return true;
 }
+
+class Executer{
+    HDD Address_Space;
+    RAM Function_Stack;
+    int EIP;
+    Table Function_Table;
+    std::stack <Object> stack;
+    std::vector <std::shared_ptr<Commander>> commands;
+public:
+    ~Executer() = default;
+    Executer( Table& function_table, std::vector <std::shared_ptr<Commander>>& c ){
+        Function_Table = function_table;
+        EIP = 0;
+        commands = c;
+    }
+
+    void Run(){
+        try {
+            if (Function_Table.find("main") == Function_Table.end()) {
+                throw "Expected definition of main function";
+            }
+            while (EIP != -1) {
+                EIP = commands.at(EIP)->Execute(stack, EIP, Address_Space, Function_Stack, Function_Table);
+            }
+        }
+        catch (const char* k){
+            std::cout << k << std::endl;
+            exit(1);
+        }
+    }
+};
 
 int main(int argc, char* argv[]) {
     std::vector <Lexeme> program_data = {};
@@ -3272,6 +3310,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Syntax analysis status: ";
     Parser parser(program_data, argv[1]);
     parser.Run();
+    Executer executer(parser.get_function_table(), parser.get_commands());
+    executer.Run();
     std::cout << "OK" << std::endl;
 /*
     std::cout << "char: " << sizeof(unsigned char) << std::endl;

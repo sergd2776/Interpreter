@@ -15,9 +15,12 @@ public:
     Object(const Object& other){
         obj_type = other.obj_type;
         value.reset(other.value->copy_data());
+        special_code_1 = other.special_code_1;
+        special_code_2 = other.special_code_2;
+        assignable_flag = other.assignable_flag;
     }
-    Object( Data* info, C_Object Class, int ID, std::pair <int, int> mem, bool flag = false ){
-        value.reset(info);
+    Object( Data* info, C_Object Class, int ID, std::pair <int, int> mem, bool flag = false ) :
+        value(info) {
         obj_type = Class;
         special_code_1 = ID;
         special_code_2 = mem;
@@ -40,10 +43,9 @@ public:
         obj_type = Class;
         value.reset(new D_Storage<int>(info));
     }
-
     template <typename T>
     explicit operator T(){
-        if (obj_type == variable) {
+        if (obj_type == constant) {
             return dynamic_cast<D_Storage<T>*>(value.get())->get_info();
         }
         else{
@@ -54,7 +56,7 @@ public:
     template <typename T>
     T* get_pointer() const {
         if (obj_type == variable) {
-            return dynamic_cast<D_Pointer<T *> *>(value.get())->get_info();
+            return (dynamic_cast<D_Pointer<T *> *>(value.get()))->get_info();
         }
         else{
             throw std::logic_error("Logic error at Object::get_pointer");
