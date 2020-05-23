@@ -1152,6 +1152,7 @@ private:
     Function fun;
     std::vector <std::shared_ptr<Commander>> commands;
     std::map <std::string, Function> function_table;
+    int cyclic_instruction_start = 0, cyclic_instruction_end = 0;
     bool func_def_flag = false;
     Type_Table type_table;
     bool HasLexeme();
@@ -3086,6 +3087,7 @@ bool Parser::Choice_Instruction(bool& ret) {
         return false;
     }
     if (check_information[lexeme_pointer].type == LexemSwitch) {
+        throw "Switch-case is not implemented yet";
         lexeme_pointer++;
         if (HasLexeme() && check_information[lexeme_pointer].type == LexemLeftParenthesis) {
             lexeme_pointer++;
@@ -3119,18 +3121,30 @@ bool Parser::Choice_Instruction(bool& ret) {
         return false;
     }
     lexeme_pointer++;
+    int saved_clear_place_1 = commands.size();
+    commands.emplace_back();
+    commands.emplace_back(new If());
     if (!Instruction(ret_1)) {
         return false;
     }
     saved_lexeme_pointer = lexeme_pointer;
-    if (HasLexeme() && check_information[lexeme_pointer].type == LexemElse){
+    if (HasLexeme() && check_information[lexeme_pointer].type == LexemElse) {
         lexeme_pointer++;
     }
-    if (!Instruction(ret_2)){
+    int saved_clear_place_2 = commands.size();
+    commands.emplace_back();
+    commands.emplace_back(new Goto());
+    commands[saved_clear_place_1].reset(new Push(commands.size()));
+    int saved_commands_pointer = commands.size();
+    if (!Instruction(ret_2)) {
         lexeme_pointer = saved_lexeme_pointer;
+        commands.erase(commands.cbegin()+saved_commands_pointer,commands.cend());
+
     }
+    commands[saved_clear_place_2].reset(new Push(commands.size()));
     ret = ret_1 || ret_2;
     return true;
+
 }
 bool Parser::Cyclic_Instruction(bool& ret) {
     int a;
@@ -3225,11 +3239,27 @@ bool Parser::Transfer_Instruction(bool& ret) {
         error.first.value = "end of file";
         return false;
     }
-    if (check_information[lexeme_pointer].type == LexemBreak
-            || check_information[lexeme_pointer].type == LexemContinue){
+    if (check_information[lexeme_pointer].type == LexemContinue){
         lexeme_pointer++;
         if (HasLexeme() && check_information[lexeme_pointer].type == LexemSemicolon){
             lexeme_pointer++;
+            if (cyclic_instruction_start == 0){
+                throw "Using \"continue\" not in the cyclic instruction";
+            }
+            commands.emplace_back(new Push(cyclic_instruction_start));
+            commands.emplace_back(new Goto());
+            return true;
+        }
+    }
+    if (check_information[lexeme_pointer].type == LexemBreak){
+        lexeme_pointer++;
+        if (HasLexeme() && check_information[lexeme_pointer].type == LexemSemicolon){
+            lexeme_pointer++;
+            if (cyclic_instruction_end == 0){
+                throw "Using \"break\" not in the cyclic instruction";
+            }
+            commands.emplace_back(new Push(cyclic_instruction_end));
+            commands.emplace_back(new Goto());
             return true;
         }
     }
@@ -3239,6 +3269,7 @@ bool Parser::Transfer_Instruction(bool& ret) {
             lexeme_pointer++;
             if (HasLexeme() && check_information[lexeme_pointer].type == LexemSemicolon){
                 lexeme_pointer++;
+                throw "Goto is not implemented yet";
                 return true;
             }
         }

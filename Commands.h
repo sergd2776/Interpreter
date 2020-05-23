@@ -209,7 +209,7 @@ class Less: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) < static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 < value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -225,7 +225,7 @@ class LessEqual: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) <= static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 <= value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -241,7 +241,7 @@ class Greater: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) > static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 > value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -257,7 +257,7 @@ class GreaterEqual: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) >= static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 >= value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -273,7 +273,7 @@ class Equal: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) == static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 == value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -289,7 +289,7 @@ class NotEqual: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) != static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 != value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -353,7 +353,7 @@ class LogicalAnd: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) && static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 && value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -369,7 +369,7 @@ class LogicalOr: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) || static_cast<bool>(value_2) ? 1 : 0));
+        stack.push(Object(value_1 || value_2 ? 1 : 0));
         return EIP+1;
     }
 public:
@@ -387,7 +387,7 @@ class Conditional: public Commander{
         stack.pop();
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
-        stack.push(Object(static_cast<bool>(value_1) ? value_2 : value_3));
+        stack.push(Object(value_1 ? value_2 : value_3));
         return EIP+1;
     }
 public:
@@ -922,13 +922,13 @@ public:
 };
 
 class Goto: public Commander{
-    int value_1;
     int Execute( std::stack <Object>& stack, int EIP, HDD& Address_Space, RAM& function_stack, Table& table ) const override {
+        int value_1 = static_cast<int>(stack.top());
+        stack.pop();
         return value_1;
     }
 public:
-    Goto(int& k){
-        value_1 = k;
+    Goto(){
         //std::cout << "Goto" << std::endl;
     }
 };
