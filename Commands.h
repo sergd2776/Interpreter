@@ -1010,7 +1010,61 @@ private:
             }
             function_stack.top().get_var_table()[var_name] = Address_Space.size() - 1;
         }
-        //Вытащить параметры из стека
+        int parameters_number = function_stack.top().get_arguments_number();
+        std::string parameter_name;
+        for (int i = parameters_number - 1; i >= 0; i--){
+            parameter_name = function_stack.top().fun_parameters[i];
+            int t_id = static_cast<int>(stack.top());
+            stack.pop();
+            if (t_id != function_stack.top().get_type_matching_table()[parameter_name]){
+                throw "Invalid type of function parameter";
+            }
+            switch (t_id){
+                case 1:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<char>()) = static_cast<char>(stack.top());
+                    break;
+                case 2:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<u_char>()) = static_cast<u_char>(stack.top());
+                    break;
+                case 3:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<short>()) = static_cast<short>(stack.top());
+                    break;
+                case 4:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<u_short>()) = static_cast<u_short>(stack.top());
+                    break;
+                case 5:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<int>()) = static_cast<int>(stack.top());
+                    break;
+                case 6:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<u_int>()) = static_cast<u_int>(stack.top());
+                    break;
+                case 7:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<long>()) = static_cast<long>(stack.top());
+                    break;
+                case 8:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<u_long>()) = static_cast<u_long>(stack.top());
+                    break;
+                case 9:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<longlong>()) = static_cast<longlong>(stack.top());
+                    break;
+                case 10:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<u_longlong>()) = static_cast<u_longlong>(stack.top());
+                    break;
+                case 11:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<float>()) = static_cast<float>(stack.top());
+                    break;
+                case 12:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<double>()) = static_cast<double>(stack.top());
+                    break;
+                case 13:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<longdouble>()) = static_cast<longdouble>(stack.top());
+                    break;
+                default:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]].cast_variable().get_pointer<int>()) = static_cast<int>(stack.top());
+                    break;
+            }
+            stack.pop();
+        }
         RefactorMemory(Address_Space, function_stack.top().get_address_space_point());
         return function_stack.top().get_enter_point();
     }

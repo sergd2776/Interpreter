@@ -1459,7 +1459,6 @@ bool Parser::Expression_Arguments_List(int& count) {
         return false;
     }
     commands.emplace_back(new Push(res_type));
-    std::cout << "Push" << std::endl;
     count++;
     if (HasLexeme() && check_information[lexeme_pointer].type == LexemComma){
         lexeme_pointer++;
@@ -2614,6 +2613,7 @@ bool Parser::Declarator_Itself(int& type_state, int& a, bool flag) {
     }
     fun.get_var_table()[var_name] = 0;
     fun.get_var_parameters_table()[var_name] = std::make_tuple(type_state, var_parameters, add_number == 0);
+    fun.get_type_matching_table()[var_name] = type_state;
     a = type_state;
     commands.emplace_back(new Push(lex));
     if (flag){
