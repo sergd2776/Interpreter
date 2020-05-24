@@ -1,5 +1,5 @@
-//#ifndef INTERPRET_VARIABLES_H
-//#define INTERPRET_VARIABLES_H
+#ifndef INTERPRET_VARIABLES_H
+#define INTERPRET_VARIABLES_H
 
 #include "Data.h"
 
@@ -135,4 +135,4 @@ public:
 };
 
 
-//#endif //INTERPRET_VARIABLES_H
+#endif //INTERPRET_VARIABLES_H

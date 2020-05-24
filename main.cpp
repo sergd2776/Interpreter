@@ -1104,7 +1104,7 @@ public:
         lexeme_pointer = 0;
         file_name = sourceFileName;
         commands.emplace_back(new Call("main"));
-        function_table["malloc"].get_arguments_number() = 1;
+        function_table["malloc"].get_arguments_number() = 2;
         function_table["printf"].get_arguments_number() = 1;
         function_table["scanf"].get_arguments_number() = 1;
     }
@@ -1311,8 +1311,7 @@ bool Parser::Primary_Expression(int& a) {
     if (check_information[lexeme_pointer].type == LexemIdentifier){
         if (fun.get_var_table().find(check_information[lexeme_pointer].value) == fun.get_var_table().end()){
             ////////////////////////////////////////////////////////////////////////////////////////////////
-            throw "Unknown identifier";                                                                   //
-            //return false;                                                                               //
+            throw "Unknown identifier";                                                                   //             //
             ////////////////////////////////////////////////////////////////////////////////////////////////
         }
         else{
@@ -1371,10 +1370,10 @@ bool Parser::Function_Call(int &a) {
         return false;
     }
     lexeme_pointer++;
-    int params = 0, par_scanf;
+    int params = 0, par_malloc;
     saved_lexeme_pointer = lexeme_pointer;
     saved_commands_pointer = commands.size();
-    if (!Expression_Arguments_List(params, par_scanf)) {
+    if (!Expression_Arguments_List(params, par_malloc)) {
         lexeme_pointer = saved_lexeme_pointer;
         commands.erase(commands.cbegin()+saved_commands_pointer,commands.cend());
     }
@@ -1392,6 +1391,16 @@ bool Parser::Function_Call(int &a) {
     if (name == "scanf"){
         commands.emplace_back(new Scanf());
         a = -1;
+    }
+    else if (name == "printf"){
+        commands.emplace_back(new Printf());
+        a = 0;
+    }
+    else if (name == "malloc"){
+        int b = type_table.table_names[type_table.table_ID[par_malloc]].second.get_point_to_type();
+        b = type_table.table_names[type_table.table_ID[b]].second.get_point_to_type();
+        commands.emplace_back(new Malloc(b));
+        a = 0;
     }
     else {
         a = function_table[name].get_return_type();
@@ -1429,13 +1438,11 @@ bool Parser::Postfix_Expression(int& a) {
             }
             else{
                 commands.emplace_back(type_table.get_command_table_1(res_type_2, LexemLeftBracket));
-                std::cout << "Addressing" << std::endl;
                 res_type_1 = type_table.table_names[type_table.table_ID[res_type_1]].second.get_point_to_type();
             }
         }
         else if (check_information[lexeme_pointer].type == LexemMinusMinus) {
             commands.emplace_back(type_table.get_command_table_1(res_type_1, LexemMinusMinus_Post));
-            std::cout << "PostfixDecrement" << std::endl;
             if (res_type_1 < 5){
                 res_type_1 = 5;
             }
@@ -1443,7 +1450,6 @@ bool Parser::Postfix_Expression(int& a) {
         }
         else if (check_information[lexeme_pointer].type == LexemPlusPlus) {
             commands.emplace_back(type_table.get_command_table_1(res_type_1, LexemPlusPlus_Post));
-            std::cout << "PostfixIncrement" << std::endl;
             if (res_type_1 < 5){
                 res_type_1 = 5;
             }
@@ -1469,17 +1475,17 @@ bool Parser::Postfix_Expression(int& a) {
     commands.erase(commands.cbegin()+saved_commands_pointer,commands.cend());
     return true;
 }
-bool Parser::Expression_Arguments_List(int& count, int& par_type) {
-    int res_type;
+bool Parser::Expression_Arguments_List(int& count, int& par_malloc) {
+    int res_type, a;
     if (!Assignment_Expression(res_type)){
         return false;
     }
     commands.emplace_back(new Push(res_type));
-    par_type = res_type;
+    par_malloc = res_type;
     count++;
     if (HasLexeme() && check_information[lexeme_pointer].type == LexemComma){
         lexeme_pointer++;
-        return Expression_Arguments_List(count, par_type);
+        return Expression_Arguments_List(count, a);
     }
     return true;
 }
@@ -1507,7 +1513,6 @@ bool Parser::Unary_Expression(int& a) {
         }
         a = res_type_1;
         commands.emplace_back(type_table.get_command_table_1(a, s_1));
-        std::cout << "Prefix Inc or Dec" << std::endl;
         if (a < 5){
             a = 5;
         }
@@ -1522,7 +1527,6 @@ bool Parser::Unary_Expression(int& a) {
             int type_ID;
             if (Type_Name(type_ID) && HasLexeme() && check_information[lexeme_pointer].type == LexemRightParenthesis) {
                 commands.emplace_back(new SizeofType(type_ID));
-                std::cout << "SizeofType" << std::endl;
                 a = 5;
                 lexeme_pointer++;
                 return true;
@@ -1533,7 +1537,6 @@ bool Parser::Unary_Expression(int& a) {
         if (!Unary_Expression(res_type_1)){
             return false;
         }
-        std::cout << "SizeofExpression" << std::endl;
 
         commands.emplace_back(type_table.get_command_table_1(res_type_1, LexemSizeof));
         a = 5;
@@ -1549,14 +1552,12 @@ bool Parser::Unary_Expression(int& a) {
     a = res_type_1;
     if ((lexemeType != LexemAsterisk) && (lexemeType != LexemAmpersand)) {
         commands.emplace_back(type_table.get_command_table_1(a, lexemeType));
-        std::cout << "Unary Operator" << std::endl;
         if (a < 5) {
             a = 5;
         }
     }
     else if (lexemeType == LexemAmpersand){
         commands.emplace_back(new PointerTo());
-        std::cout << "PointerTo" << std::endl;
         if (type_table.table_names[type_table.table_ID[a]].second.get_address_type() < 0){
             a = CreateType(type_table.table_ID[a] + "*", res_type_1, type_table.table_names[type_table.table_ID[res_type_1]].second.get_pointer_degree());
         }
@@ -1571,7 +1572,6 @@ bool Parser::Unary_Expression(int& a) {
             ////////////////////////////////////////////////////////////////////////////////////////////////
         }
         commands.emplace_back(new RemovePointer());
-        std::cout << "RemovePointer" << std::endl;
         a = type_table.table_names[type_table.table_ID[res_type_1]].second.get_point_to_type();
     }
     return true;
@@ -1609,7 +1609,6 @@ bool Parser::Expression_Cast_To_Type(int& a) {
                 return false;
             }
             commands.emplace_back(type_table.get_command_table_type_cast(type_ID, res_type_1));
-            std::cout << "TypeCast" << std::endl;
             a = type_ID;
             return true;
         }
@@ -1637,7 +1636,6 @@ bool Parser::Multiplicative_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "Multiplicative operator" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1666,9 +1664,7 @@ bool Parser::Additive_Expression(int& a) {
         if (!Multiplicative_Expression(res_type_2)){
             break;
         }
-        std::cout << "Additive operator" << std::endl;
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "Additive operator" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1698,7 +1694,6 @@ bool Parser::Shift_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "Shift operator" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1730,7 +1725,6 @@ bool Parser::Relation_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "Relation operator" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1760,7 +1754,6 @@ bool Parser::Equality_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "Equality operator" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1789,7 +1782,6 @@ bool Parser::AND_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "ByteAnd" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1818,7 +1810,6 @@ bool Parser::XOR_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "ByteXor" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1847,7 +1838,6 @@ bool Parser::OR_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "ByteOr" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1876,7 +1866,6 @@ bool Parser::AND_Logical_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "LogicalAnd" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1905,7 +1894,6 @@ bool Parser::OR_Logical_Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "LogicalOr" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -1950,7 +1938,6 @@ bool Parser::Conditional_Expression(int& a) {
     }
     a = res_type_2 > res_type_3 ? res_type_2 : res_type_3;
     commands.emplace_back(type_table.get_command_table_3(res_type_1, a));
-    std::cout << "Condition operand" << std::endl;
     return true;
 } //TODO Change set of commands at command_matching_table_3 (or maybe not...??? ohh, am not sure)
 bool Parser::Assignment_Expression(int& a) {
@@ -1963,7 +1950,6 @@ bool Parser::Assignment_Expression(int& a) {
             res_type_2 = res_type_1;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "Assignment operator" << std::endl;
         a = res_type_1;
         return true;
     }
@@ -2013,7 +1999,6 @@ bool Parser::Expression(int& a) {
             break;
         }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
-        std::cout << "LogicalOr" << std::endl;
         if (res_type_2 > res_type_1){
             res_type_1 = res_type_2;
         }
@@ -3370,28 +3355,12 @@ int main(int argc, char* argv[]) {
     Scanner scan(argv[1]);
     scan.Run(program_data);
     std::cout << "OK" << std::endl;
-    std::cout << "Syntax analysis status: ";
+    //std::cout << "Syntax analysis status: ";
     Parser parser(program_data, argv[1]);
     parser.Run();
     Executer executer(parser.get_function_table(), parser.get_commands());
     executer.Run();
-    std::cout << "OK" << std::endl;
-/*
-    std::cout << "char: " << sizeof(unsigned char) << std::endl;
-    std::cout << "int: " << sizeof(int) << std::endl;
-    std::cout << "short: " << sizeof(short) << std::endl;
-    std::cout << "long: " << sizeof(long) << std::endl;
-    std::cout << "long long: " << sizeof(unsigned long long) << std::endl;
-    std::cout << "char**: " << sizeof(char**) << std::endl;
-    std::cout << "const char*: " << sizeof(const char*) << std::endl;
-    std::cout << "int***: " << sizeof(int***) << std::endl;
-    std::cout << "float: " << sizeof(float) << std::endl;
-    std::cout << "double: " << sizeof(double) << std::endl;
-*/
+    //std::cout << "OK" << std::endl;
 
-    //cout << "Lexeme list:" << endl;
-    //for (int i = 0; i < program_data.size(); i++){
-        //cout << program_data[i].value << endl;
-    //}
     return 0;
 }

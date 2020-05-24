@@ -1,5 +1,5 @@
-//#ifndef INTERPRET_COMMANDS_H
-//#define INTERPRET_COMMANDS_H
+#ifndef INTERPRET_COMMANDS_H
+#define INTERPRET_COMMANDS_H
 
 #include "Variables.h"
 
@@ -102,6 +102,11 @@ T Read(){
     return val;
 }
 
+template <typename T>
+void Write(T val){
+    std::cout << val << std::endl;
+}
+
 class Commander{
 public:
     virtual ~Commander() = default;
@@ -144,15 +149,12 @@ public:
             default:
                 throw std::logic_error("Logic error in Command_Push");
         }
-        //std::cout << "Push" << std::endl;
     }
     explicit Push(int point){
-        //std::cout << "Push" << std::endl;
         value = Object(point);
         lex.type = LexemDecIntConst;
     }
     explicit Push(Lexeme& lexeme){
-        //std::cout << "Push" << std::endl;
         lex = lexeme;
     }
     int Execute ( std::stack <Object>& stack, int EIP, HDD& Address_Space, RAM& function_stack, Table& table ) const override{
@@ -172,11 +174,6 @@ class Pop: public Commander{
         stack.pop();
         return EIP+1;
     }
-
-public:
-    Pop(){
-        //std::cout << "Pop" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -188,10 +185,6 @@ class Add: public Commander{
         stack.pop();
         stack.push(Object(value_1 + value_2));
         return EIP+1;
-    }
-public:
-    Add(){
-        //std::cout << "Add" << std::endl;
     }
 };
 
@@ -206,9 +199,6 @@ class Sub: public Commander{
         return EIP+1;
     }
 public:
-    Sub(){
-        //std::cout << "Sub" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -222,9 +212,6 @@ class Mul: public Commander{
         return EIP+1;
     }
 public:
-    Mul(){
-        //std::cout << "Mul" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -236,10 +223,6 @@ class Div: public Commander{
         stack.pop();
         stack.push(Object(value_1 / value_2));
         return EIP+1;
-    }
-public:
-    Div(){
-        //std::cout << "Div" << std::endl;
     }
 };
 
@@ -253,10 +236,6 @@ class Mod: public Commander{
         stack.push(Object(value_1 % value_2));
         return EIP+1;
     }
-public:
-    Mod(){
-        //std::cout << "Mod" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -268,10 +247,6 @@ class MoveLeft: public Commander{
         stack.pop();
         stack.push(Object(value_1 << value_2));
         return EIP+1;
-    }
-public:
-    MoveLeft(){
-        //std::cout << "MoveLeft" << std::endl;
     }
 };
 
@@ -285,10 +260,6 @@ class MoveRight: public Commander{
         stack.push(Object(value_1 >> value_2));
         return EIP+1;
     }
-public:
-    MoveRight(){
-        //std::cout << "MoveRight" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -300,10 +271,6 @@ class Less: public Commander{
         stack.pop();
         stack.push(Object(value_1 < value_2 ? 1 : 0));
         return EIP+1;
-    }
-public:
-    Less(){
-        //std::cout << "Less" << std::endl;
     }
 };
 
@@ -317,10 +284,6 @@ class LessEqual: public Commander{
         stack.push(Object(value_1 <= value_2 ? 1 : 0));
         return EIP+1;
     }
-public:
-    LessEqual(){
-        //std::cout << "LessEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -332,10 +295,6 @@ class Greater: public Commander{
         stack.pop();
         stack.push(Object(value_1 > value_2 ? 1 : 0));
         return EIP+1;
-    }
-public:
-    Greater(){
-        //std::cout << "Greater" << std::endl;
     }
 };
 
@@ -349,10 +308,6 @@ class GreaterEqual: public Commander{
         stack.push(Object(value_1 >= value_2 ? 1 : 0));
         return EIP+1;
     }
-public:
-    GreaterEqual(){
-        //std::cout << "GreaterEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -364,10 +319,6 @@ class Equal: public Commander{
         stack.pop();
         stack.push(Object(value_1 == value_2 ? 1 : 0));
         return EIP+1;
-    }
-public:
-    Equal(){
-        //std::cout << "Equal" << std::endl;
     }
 };
 
@@ -381,10 +332,6 @@ class NotEqual: public Commander{
         stack.push(Object(value_1 != value_2 ? 1 : 0));
         return EIP+1;
     }
-public:
-    NotEqual(){
-        //std::cout << "NotEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -396,10 +343,6 @@ class ByteAnd: public Commander{
         stack.pop();
         stack.push(Object(value_1 & value_2));
         return EIP+1;
-    }
-public:
-    ByteAnd(){
-        //std::cout << "ByteAnd" << std::endl;
     }
 };
 
@@ -413,10 +356,6 @@ class ByteXor: public Commander{
         stack.push(Object(value_1 ^ value_2));
         return EIP+1;
     }
-public:
-    ByteXor(){
-        //std::cout << "ByteXor" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -429,10 +368,6 @@ class ByteOr: public Commander{
         stack.push(Object(value_1 | value_2));
         return EIP+1;
     }
-public:
-    ByteOr(){
-        //std::cout << "ByteOr" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -443,11 +378,7 @@ class LogicalAnd: public Commander{
         T1 value_1 = static_cast<T1>(stack.top());
         stack.pop();
         stack.push(Object(value_1 && value_2 ? 1 : 0));
-        return EIP+1;
-    }
-public:
-    LogicalAnd(){
-        //std::cout << "LogicalAnd" << std::endl;
+        return EIP + 1;
     }
 };
 
@@ -460,10 +391,6 @@ class LogicalOr: public Commander{
         stack.pop();
         stack.push(Object(value_1 || value_2 ? 1 : 0));
         return EIP+1;
-    }
-public:
-    LogicalOr(){
-        //std::cout << "LogicalOr" << std::endl;
     }
 };
 
@@ -478,10 +405,6 @@ class Conditional: public Commander{
         stack.pop();
         stack.push(Object(value_1 ? value_2 : value_3));
         return EIP+1;
-    }
-public:
-    Conditional(){
-        //std::cout << "Conditional" << std::endl;
     }
 };
 
@@ -501,10 +424,6 @@ class Equally: public Commander{
         stack.push(Object((*value_1) = value_2));
         return EIP+1;
     }
-public:
-    Equally(){
-        //std::cout << "Equally" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -521,10 +440,6 @@ class AddEqual: public Commander{
         stack.pop();
         stack.push(Object(*value_1 += value_2));
         return EIP+1;
-    }
-public:
-    AddEqual(){
-        //std::cout << "AddEqual" << std::endl;
     }
 };
 
@@ -543,10 +458,6 @@ class SubEqual: public Commander{
         stack.push(Object(*value_1 -= value_2));
         return EIP+1;
     }
-public:
-    SubEqual(){
-        //std::cout << "SubEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -563,10 +474,6 @@ class MulEqual: public Commander{
         stack.pop();
         stack.push(Object(*value_1 *= value_2));
         return EIP+1;
-    }
-public:
-    MulEqual(){
-        //std::cout << "MulEqual" << std::endl;
     }
 };
 
@@ -585,10 +492,6 @@ class DivEqual: public Commander{
         stack.push(Object(*value_1 /= value_2));
         return EIP+1;
     }
-public:
-    DivEqual(){
-        //std::cout << "DivEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -605,10 +508,6 @@ class ModEqual: public Commander{
         stack.pop();
         stack.push(Object(*value_1 %= value_2));
         return EIP+1;
-    }
-public:
-    ModEqual(){
-        //std::cout << "ModEqual" << std::endl;
     }
 };
 
@@ -627,10 +526,6 @@ class MoveLeftEqual: public Commander{
         stack.push(Object(*value_1 <<= value_2));
         return EIP+1;
     }
-public:
-    MoveLeftEqual(){
-        //std::cout << "MoveLeftEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -648,10 +543,6 @@ class MoveRightEqual: public Commander{
         stack.push(Object(*value_1 >>= value_2));
         return EIP+1;
     }
-public:
-    MoveRightEqual(){
-        //std::cout << "MoveRightEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -659,19 +550,15 @@ class LogicalAndEqual: public Commander{
     int Execute( std::stack <Object>& stack, int EIP, HDD& Address_Space, RAM& function_stack, Table& table ) const override {
         T2 value_2 = static_cast<T2>(stack.top());
         stack.pop();
-        if ((stack.top().get_special_code_1() == -1) || (!stack.top().get_assignable_flag())){
+        if ((stack.top().get_special_code_1() == -1) || (!stack.top().get_assignable_flag())) {
             ///////////////////////////////////////////////////////////////////////
             throw "Expression is not assignable";
             ///////////////////////////////////////////////////////////////////////
         }
-        T1* value_1 = stack.top().get_pointer<T1>();
+        T1 *value_1 = stack.top().get_pointer<T1>();
         stack.pop();
         stack.push(Object(*value_1 &= value_2));
-        return EIP+1;
-    }
-public:
-    LogicalAndEqual(){
-        //std::cout << "LogicalAndEqual" << std::endl;
+        return EIP + 1;
     }
 };
 
@@ -690,10 +577,6 @@ class LogicalXorEqual: public Commander{
         stack.push(Object(*value_1 ^= value_2));
         return EIP+1;
     }
-public:
-    LogicalXorEqual(){
-        //std::cout << "LogicalXorEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -711,10 +594,6 @@ class LogicalOrEqual: public Commander{
         stack.push(Object(*value_1 |= value_2));
         return EIP+1;
     }
-public:
-    LogicalOrEqual(){
-        //std::cout << "LogicalOrEqual" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -727,10 +606,6 @@ class Comma: public Commander{
         stack.push(Object((value_1 , value_2)));
         return EIP+1;
     }
-public:
-    Comma(){
-        //std::cout << "Comma" << std::endl;
-    }
 };
 
 template <typename T>
@@ -741,10 +616,6 @@ class UnaryPlus: public Commander{
         stack.push(Object(+value_1));
         return EIP+1;
     }
-public:
-    UnaryPlus(){
-        //std::cout << "UnaryPlus" << std::endl;
-    }
 };
 
 template <typename T>
@@ -754,10 +625,6 @@ class UnaryMinus: public Commander{
         stack.pop();
         stack.push(Object(-value_1));
         return EIP+1;
-    }
-public:
-    UnaryMinus(){
-        //std::cout << "UnaryMinus" << std::endl;
     }
 };
 
@@ -774,10 +641,6 @@ class PrefixIncrement: public Commander{
         stack.push(Object(++(*value_1)));
         return EIP+1;
     }
-public:
-    PrefixIncrement(){
-        //std::cout << "PrefixIncrement" << std::endl;
-    }
 };
 
 template <typename T>
@@ -792,10 +655,6 @@ class PrefixDecrement: public Commander{
         stack.pop();
         stack.push(Object(--(*value_1)));
         return EIP+1;
-    }
-public:
-    PrefixDecrement(){
-        //std::cout << "PrefixDecrement" << std::endl;
     }
 };
 
@@ -812,10 +671,6 @@ class PostfixIncrement: public Commander{
         stack.push(Object((*value_1)++));
         return EIP+1;
     }
-public:
-    PostfixIncrement(){
-        //std::cout << "PostfixIncrement" << std::endl;
-    }
 };
 
 template <typename T>
@@ -831,10 +686,6 @@ class PostfixDecrement: public Commander{
         stack.push(Object((*value_1)--));
         return EIP+1;
     }
-public:
-    PostfixDecrement(){
-        //std::cout << "PostfixDecrement" << std::endl;
-    }
 };
 
 template <typename T>
@@ -845,10 +696,6 @@ class ByteNot: public Commander{
         stack.push(Object(~value_1));
         return EIP+1;
     }
-public:
-    ByteNot(){
-        //std::cout << "ByteNot" << std::endl;
-    }
 };
 
 template <typename T>
@@ -858,10 +705,6 @@ class Not: public Commander{
         stack.pop();
         stack.push(Object(!static_cast<bool>(value_1) ? 1 : 0));
         return EIP+1;
-    }
-public:
-    Not(){
-        //std::cout << "Not" << std::endl;
     }
 };
 
@@ -877,10 +720,6 @@ class PointerTo: public Commander{
         stack.push(Object(value_1));
         return EIP+1;
     }
-public:
-    PointerTo(){
-        //std::cout << "PointerTo" << std::endl;
-    }
 };
 
 class RemovePointer: public Commander{
@@ -894,10 +733,6 @@ class RemovePointer: public Commander{
         stack.pop();
         stack.push(Object(Address_Space[value_1]->cast_variable()));
         return EIP+1;
-    }
-public:
-    RemovePointer(){
-        //std::cout << "RemovePointer" << std::endl;
     }
 };
 
@@ -951,10 +786,6 @@ class SizeofExpression: public Commander{
         stack.push(Object(sizeof(value_1)));
         return EIP+1;
     }
-public:
-    SizeofExpression(){
-        //std::cout << "SizeofExpression" << std::endl;
-    }
 };
 
 template <typename T1, typename T2>
@@ -964,10 +795,6 @@ class TypeCast: public Commander{
         stack.pop();
         stack.push(Object((T1) value_1));
         return EIP+1;
-    }
-public:
-    TypeCast(){
-        //std::cout << "TypeCast" << std::endl;
     }
 };
 
@@ -986,10 +813,6 @@ class Addressing: public Commander{
         stack.push(Address_Space[value_1 + value_2]->cast_variable());
         return EIP+1;
     }
-public:
-    Addressing(){
-        //std::cout << "Addressing" << std::endl;
-    }
 };
 
 class If: public Commander {
@@ -1004,10 +827,6 @@ class If: public Commander {
             return EIP+1;
         }
     }
-public:
-    If(){
-        //std::cout << "If" << std::endl;
-    }
 };
 
 class Goto: public Commander{
@@ -1015,10 +834,6 @@ class Goto: public Commander{
         int value_1 = static_cast<int>(stack.top());
         stack.pop();
         return value_1;
-    }
-public:
-    Goto(){
-        //std::cout << "Goto" << std::endl;
     }
 };
 
@@ -1197,10 +1012,6 @@ class Return: public Commander{
         function_stack.pop(); //Поднять функцию из стека-->
         return a; //Вернуть exit point -->
     }
-public:
-    Return(){
-        //std::cout << "Return" << std::endl;
-    }
 };
 
 class Scanf: public Commander{
@@ -1261,5 +1072,95 @@ class Scanf: public Commander{
     }
 };
 
+class Printf: public Commander{
+    int Execute( std::stack <Object>& stack, int EIP, HDD& Address_Space, RAM& function_stack, Table& table ) const override {
+        int t_id = static_cast<int>(stack.top());
+        stack.pop();
+        switch (t_id){
+            case 1:
+            Write(static_cast<char>(stack.top()));
+            break;
+            case 2:
+                Write(static_cast<u_char>(stack.top()));
+                break;
+            case 3:
+                Write(static_cast<short>(stack.top()));
+                break;
+            case 4:
+                Write(static_cast<u_short>(stack.top()));
+                break;
+            case 5:
+                Write(static_cast<int>(stack.top()));
+                break;
+            case 6:
+                Write(static_cast<u_int>(stack.top()));
+                break;
+            case 7:
+                Write(static_cast<long>(stack.top()));
+                break;
+            case 8:
+                Write(static_cast<u_long>(stack.top()));
+                break;
+            case 9:
+                Write(static_cast<longlong>(stack.top()));
+                break;
+            case 10:
+                Write(static_cast<u_longlong>(stack.top()));
+                break;
+            case 11:
+                Write(static_cast<float>(stack.top()));
+                break;
+            case 12:
+                Write(static_cast<double>(stack.top()));
+                break;
+            case 13:
+                Write(static_cast<longdouble>(stack.top()));
+                break;
+            case 14:
+                Write(static_cast<const char*>(stack.top()));
+                break;
+            default:
+                throw "Invalid printf operand";
+        }
+        return EIP + 1;
+    }
+};
 
-//#endif //INTERPRET_COMMANDS_H
+class Malloc: public Commander{
+    int Execute( std::stack <Object>& stack, int EIP, HDD& Address_Space, RAM& function_stack, Table& table ) const override {
+        int t_id = static_cast<int>(stack.top());
+        stack.pop();
+        if (t_id != 5){
+            throw "Invalid malloc operand";
+        }
+        int value_2 = static_cast<int>(stack.top());
+        stack.pop();
+        if (value_2 < 1){
+            throw "Invalid malloc operand";
+        }
+        t_id = static_cast<int>(stack.top());
+        stack.pop();
+        if (t_id < 15){
+            throw "Invalid malloc operand";
+        }
+        int value_1 = static_cast<int>(stack.top());
+        if (value_1 > Address_Space.size() - 1){
+            ///////////////////////////////////////////////////////////////////////
+            throw "Trying to access nonexistent address";
+            ///////////////////////////////////////////////////////////////////////
+        }
+        stack.pop();
+        Address_Space[value_1]->get_vars_in_subordination().push(value_2);
+        Address_Space[value_1]->get_type_pointing().push(t);
+        RefactorMemory(Address_Space, value_1);
+        return EIP + 1;
+    }
+    int t;
+public:
+    explicit Malloc(int point_to){
+        t = point_to;
+    }
+};
+
+
+#endif //INTERPRET_COMMANDS_H

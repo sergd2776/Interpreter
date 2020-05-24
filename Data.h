@@ -1,5 +1,5 @@
-//#ifndef INTERPRET_DATA_H
-//#define INTERPRET_DATA_H
+#ifndef INTERPRET_DATA_H
+#define INTERPRET_DATA_H
 
 #include "Functions.h"
 
@@ -157,9 +157,8 @@ typedef long double longdouble;
 class Variable;
 class Type;
 class Function;
+class Type_Table;
 
-//std::vector <std::pair<Variable,bool>> Address_Space;
-//std::stack <Function> function_stack;
 
 class Data{
 public:
@@ -209,4 +208,4 @@ Data* D_Storage<T>::copy_data_pointer() {
     return new D_Pointer<T*>(&info);
 }
 
-//#endif //INTERPRET_DATA_H
+#endif //INTERPRET_DATA_H

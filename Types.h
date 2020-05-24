@@ -1,5 +1,5 @@
-//#ifndef INTERPRET_TYPES_H
-//#define INTERPRET_TYPES_H
+#ifndef INTERPRET_TYPES_H
+#define INTERPRET_TYPES_H
 
 #include "Commands.h"
 
@@ -4506,4 +4506,4 @@ Type_Table::Type_Table() {
     add_to_command_table_1( 10 , LexemLeftBracket , new Addressing < unsigned long long >);
 }
 
-//#endif //INTERPRET_TYPES_H
+#endif //INTERPRET_TYPES_H

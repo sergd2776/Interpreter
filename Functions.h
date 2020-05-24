@@ -1,5 +1,5 @@
-//#ifndef INTERPRET_FUNCTIONS_H
-//#define INTERPRET_FUNCTIONS_H
+#ifndef INTERPRET_FUNCTIONS_H
+#define INTERPRET_FUNCTIONS_H
 
 #include <memory>
 #include <map>
@@ -51,4 +51,4 @@ public:
 
 
 
-//#endif //INTERPRET_FUNCTIONS_H
+#endif //INTERPRET_FUNCTIONS_H
