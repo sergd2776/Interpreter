@@ -8,6 +8,7 @@
 #include <tuple>
 #include <exception>
 #include <queue>
+#include <cstring>
 
 class Function{
 private:

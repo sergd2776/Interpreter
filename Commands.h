@@ -8,6 +8,7 @@ typedef std::vector <std::shared_ptr<Variable>> HDD;
 typedef std::stack <Function> RAM;
 typedef std::map <std::string, Function> Table;
 typedef std::map <std::string, std::tuple <int, std::queue <int>, std::stack <int>, bool>> Par_Table;
+
 void RefactorMemory(HDD& Address_Space, int refactoring_point){
     std::queue <int> for_massive;
     std::stack <int> types;
@@ -92,6 +93,13 @@ void RefactorMemory(HDD& Address_Space, int refactoring_point){
             for_massive = {};
         }
     }
+}
+
+template <typename T>
+T Read(){
+    T val;
+    std::cin >> val;
+    return val;
 }
 
 class Commander{
@@ -1192,6 +1200,64 @@ class Return: public Commander{
 public:
     Return(){
         //std::cout << "Return" << std::endl;
+    }
+};
+
+class Scanf: public Commander{
+    int Execute( std::stack <Object>& stack, int EIP, HDD& Address_Space, RAM& function_stack, Table& table ) const override {
+        int t_id = static_cast<int>(stack.top());
+        stack.pop();
+        if (t_id != 14) {
+            throw "Invalid type of function parameter";
+        }
+        const char* type_scan = static_cast<const char*>(stack.top());
+        stack.pop();
+        if (0==strcmp(type_scan, "char")) {
+            stack.push(Object(Read<char>()));
+        }
+        else if (0==strcmp(type_scan, "unsigned char")) {
+            stack.push(Object(Read<u_char>()));
+        }
+        else if (0==strcmp(type_scan, "unsigned char")) {
+            stack.push(Object(Read<u_char>()));
+        }
+        else if (0==strcmp(type_scan, "short")) {
+            stack.push(Object(Read<short>()));
+        }
+        else if (0==strcmp(type_scan, "unsigned short")) {
+            stack.push(Object(Read<u_short>()));
+        }
+        else if (0==strcmp(type_scan, "int")) {
+            stack.push(Object(Read<int>()));
+        }
+        else if (0==strcmp(type_scan, "unsigned int")) {
+            stack.push(Object(Read<u_int>()));
+        }
+        else if (0==strcmp(type_scan, "long")) {
+            stack.push(Object(Read<long>()));
+        }
+        else if (0==strcmp(type_scan, "unsigned long")) {
+            stack.push(Object(Read<u_long>()));
+        }
+        else if (0==strcmp(type_scan, "long long")){
+            stack.push(Object(Read<longlong>()));
+        }
+        else if (0==strcmp(type_scan, "unsigned long long")) {
+            stack.push(Object(Read<u_longlong>()));
+        }
+        else if (0==strcmp(type_scan, "float")) {
+            stack.push(Object(Read<float>()));
+        }
+        else if (0==strcmp(type_scan, "double")) {
+            stack.push(Object(Read<double>()));
+        }
+        else if (0==strcmp(type_scan, "long double")) {
+            stack.push(Object(Read<longdouble>()));
+        }
+        else{
+            throw "Invalid argument of scanf";
+        }
+        return EIP + 1;
     }
 };
 

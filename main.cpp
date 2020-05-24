@@ -1104,6 +1104,9 @@ public:
         lexeme_pointer = 0;
         file_name = sourceFileName;
         commands.emplace_back(new Call("main"));
+        function_table["malloc"].get_arguments_number() = 1;
+        function_table["printf"].get_arguments_number() = 1;
+        function_table["scanf"].get_arguments_number() = 1;
     }
     ~Parser() = default;
 
@@ -1172,7 +1175,7 @@ private:
     bool Function_Definition(); //Done
     bool Primary_Expression(int& a); //Done
     bool Postfix_Expression(int& a); //Done
-    bool Expression_Arguments_List(int& count); //Done
+    bool Expression_Arguments_List(int& count, int& par_type); //Done
     bool Unary_Expression(int& a); //Done
     bool Unary_Operator(LexemeType& lex); //Done
     bool Expression_Cast_To_Type(int& a); //Done
@@ -1314,7 +1317,6 @@ bool Parser::Primary_Expression(int& a) {
         }
         else{
             commands.emplace_back(new Push(check_information[lexeme_pointer]));
-            std::cout << "Push" << std::endl;
             a = std::get<0>(fun.get_var_parameters_table()[check_information[lexeme_pointer].value]);
         }
         lexeme_pointer++;
@@ -1322,7 +1324,6 @@ bool Parser::Primary_Expression(int& a) {
     }
     else if (check_information[lexeme_pointer].l_class == C_LexemConstant){
         commands.emplace_back(new Push(check_information[lexeme_pointer], a));
-        std::cout << "Push" << std::endl;
         lexeme_pointer++;
         return true;
     }
@@ -1370,10 +1371,10 @@ bool Parser::Function_Call(int &a) {
         return false;
     }
     lexeme_pointer++;
-    int params = 0;
+    int params = 0, par_scanf;
     saved_lexeme_pointer = lexeme_pointer;
     saved_commands_pointer = commands.size();
-    if (!Expression_Arguments_List(params)) {
+    if (!Expression_Arguments_List(params, par_scanf)) {
         lexeme_pointer = saved_lexeme_pointer;
         commands.erase(commands.cbegin()+saved_commands_pointer,commands.cend());
     }
@@ -1387,10 +1388,15 @@ bool Parser::Function_Call(int &a) {
         error.first = check_information[lexeme_pointer];
         return false;
     }
-        lexeme_pointer++;
-    a = function_table[name].get_return_type();
-    commands.emplace_back(new Call(name));
-    std::cout << "Call" << std::endl;
+    lexeme_pointer++;
+    if (name == "scanf"){
+        commands.emplace_back(new Scanf());
+        a = -1;
+    }
+    else {
+        a = function_table[name].get_return_type();
+        commands.emplace_back(new Call(name));
+    }
     return true;
 }
 bool Parser::Postfix_Expression(int& a) {
@@ -1463,16 +1469,17 @@ bool Parser::Postfix_Expression(int& a) {
     commands.erase(commands.cbegin()+saved_commands_pointer,commands.cend());
     return true;
 }
-bool Parser::Expression_Arguments_List(int& count) {
+bool Parser::Expression_Arguments_List(int& count, int& par_type) {
     int res_type;
     if (!Assignment_Expression(res_type)){
         return false;
     }
     commands.emplace_back(new Push(res_type));
+    par_type = res_type;
     count++;
     if (HasLexeme() && check_information[lexeme_pointer].type == LexemComma){
         lexeme_pointer++;
-        return Expression_Arguments_List(count);
+        return Expression_Arguments_List(count, par_type);
     }
     return true;
 }
@@ -1952,6 +1959,9 @@ bool Parser::Assignment_Expression(int& a) {
     int saved_commands_pointer = commands.size();
     LexemeType lexemeType;
     if (Unary_Expression(res_type_1) && Assignment_Operator(lexemeType) && Assignment_Expression(res_type_2)) {
+        if (res_type_2 == -1){
+            res_type_2 = res_type_1;
+        }
         commands.emplace_back(type_table.get_command_table_2(res_type_1, res_type_2, lexemeType));
         std::cout << "Assignment operator" << std::endl;
         a = res_type_1;
