@@ -186,6 +186,8 @@ public:
 
 Type_Table::Type_Table() {
 
+    //add_to_command_table_2( 14 , 14 , LexemEqually , new Equally < std::string , std::string >);
+
     //Add,Sub,Mul,Div code_generator_1
 
     add_to_command_table_2( 1 , 1 , LexemPlus , new Add < signed char , signed char >);

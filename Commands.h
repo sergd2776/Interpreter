@@ -7,10 +7,91 @@
 typedef std::vector <std::shared_ptr<Variable>> HDD;
 typedef std::stack <Function> RAM;
 typedef std::map <std::string, Function> Table;
-typedef std::map <std::string, std::tuple <int, std::queue <int>, bool>> Par_Table;
-
-void RefactorMemory(HDD& Address_Space, int refactoring_point){ //TODO refactoring
-
+typedef std::map <std::string, std::tuple <int, std::queue <int>, std::stack <int>, bool>> Par_Table;
+void RefactorMemory(HDD& Address_Space, int refactoring_point){
+    std::queue <int> for_massive;
+    std::stack <int> types;
+    int type_id;
+    for (int i = refactoring_point; i < Address_Space.size(); i++){
+        type_id = Address_Space[i].get()->get_type_number();
+        types = Address_Space[i].get()->get_type_pointing();
+        for_massive = Address_Space[i].get()->get_vars_in_subordination();
+        if (!for_massive.empty()){
+            int* value = Address_Space[i].get()->cast_variable().get_pointer<int>();
+            *value = Address_Space.size();
+            int a = for_massive.front();
+            int b = types.top();
+            Address_Space[i].get()->get_pointer_borders() = std::make_pair(Address_Space.size(), Address_Space.size()+a-1);
+            for_massive.pop();
+            types.pop();
+            for (int j = 1; j <= a; j++){
+                switch (b){
+                    case 1:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, char(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 2:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, u_char(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 3:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, short(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 4:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, u_short(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 5:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, int(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 6:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, u_int(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 7:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, long(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 8:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, u_long(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 9:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, longlong(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 10:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, u_longlong(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 11:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, float(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 12:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, double(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 13:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, longdouble (), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    case 14:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, std::string(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                    default:
+                        Address_Space.emplace_back(std::make_shared<Variable>(b, int(), Address_Space.size(),
+                                for_massive,types, for_massive.empty(), "@"));
+                        break;
+                }
+            }
+            types = {};
+            for_massive = {};
+        }
+    }
 }
 
 class Commander{
@@ -957,59 +1038,78 @@ private:
             switch (type_state){
                 case 1:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, char(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 2:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, u_char(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 3:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, short(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 4:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, u_short(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 5:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, int(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 6:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, u_int(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 7:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, long(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 8:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, u_long(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 9:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, longlong(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 10:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, u_longlong(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 11:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, float(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 12:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, double(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 case 13:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, longdouble(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
+                    break;
+                case 14:
+                    Address_Space.emplace_back(std::make_shared<Variable>(type_state, std::string(), Address_Space.size(),
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
                 default:
                     Address_Space.emplace_back(std::make_shared<Variable>(type_state, int(), Address_Space.size(),
-                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), var_name));
+                            std::get<1>(p_table[var_name]),std::get<2>(p_table[var_name]), std::get<3>(p_table[var_name]),
+                                    var_name));
                     break;
             }
             function_stack.top().get_var_table()[var_name] = Address_Space.size() - 1;
@@ -1062,6 +1162,9 @@ private:
                     break;
                 case 13:
                     *(Address_Space[function_stack.top().get_var_table()[parameter_name]]->cast_variable().get_pointer<longdouble>()) = static_cast<longdouble>(stack.top());
+                    break;
+                case 14:
+                    *(Address_Space[function_stack.top().get_var_table()[parameter_name]]->cast_variable().get_pointer<std::string>()) = static_cast<std::string>(stack.top());
                     break;
                 default:
                     *(Address_Space[function_stack.top().get_var_table()[parameter_name]]->cast_variable().get_pointer<int>()) = static_cast<int>(stack.top());

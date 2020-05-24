@@ -77,6 +77,7 @@ class Variable{
 private:
     int type_number = -1;
     std::unique_ptr<Data> value;
+    std::stack <int> type_pointing;
     int address = -1;
     bool assignable_flag = true;
     std::queue <int> vars_in_subordination;
@@ -94,17 +95,32 @@ public:
         vars_in_subordination = other.vars_in_subordination;
         special_for_pointer = other.special_for_pointer;
         name = other.name;
+        type_pointing = other.type_pointing;
     }
     template<typename T>
-    Variable(int t_number, T v, int addr, std::queue <int>& subordination, bool flag, std::string& v_name) :
+    Variable(int t_number, T v, int addr, std::queue <int>& subordination, std::stack <int>& t_pointing, bool flag, std::string v_name) :
     value(new D_Storage<T>(v)){
         type_number = t_number;
         address = addr;
         assignable_flag = flag;
         vars_in_subordination = subordination;
         name = v_name;
+        type_pointing = t_pointing;
     }
     int get_var_type() const{
+        return type_number;
+    }
+    std::queue <int>& get_vars_in_subordination(){
+        return vars_in_subordination;
+    }
+    std::pair <int, int>& get_pointer_borders(){
+        return special_for_pointer;
+    }
+    std::stack <int>& get_type_pointing(){
+        return type_pointing;
+    }
+
+    int get_type_number() {
         return type_number;
     }
     Object cast_variable() const{

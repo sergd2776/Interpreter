@@ -13,7 +13,7 @@ class Function{
 private:
     std::map <std::string, int> var_table;
     std::map <std::string, int> type_matching_table;
-    std::map <std::string, std::tuple <int, std::queue <int>, bool>> var_parameters;
+    std::map <std::string, std::tuple <int, std::queue <int>, std::stack <int>, bool>> var_parameters;
     int arguments_number, enter_point, return_type, address_space_point;
     int exit_point = -1;
     std::string name;
@@ -22,7 +22,7 @@ public:
     std::map <std::string, int>& get_var_table(){
         return var_table;
     }
-    std::map <std::string, std::tuple <int, std::queue <int>, bool>>& get_var_parameters_table(){
+    std::map <std::string, std::tuple <int, std::queue <int>, std::stack <int>, bool>>& get_var_parameters_table(){
         return var_parameters;
     }
     std::map <std::string, int>& get_type_matching_table(){

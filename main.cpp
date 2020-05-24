@@ -1151,7 +1151,9 @@ private:
     std::string file_name;
     Function fun;
     std::vector <std::shared_ptr<Commander>> commands;
-    std::map <std::string, Function> function_table;
+    std::map <std::string, Function> function_table = {{"printf", Function()},
+                                                       {"scanf", Function()},
+                                                       {"malloc", Function()}};
     int cyclic_instruction_start = -1;
     bool func_def_flag = false;
     std::queue <int> break_list = {};
@@ -2584,6 +2586,7 @@ bool Parser::Declarator_Itself(int& type_state, int& a, bool flag) {
     }
 
     std::queue <int> var_parameters;
+    std::stack <int> type_parameters;
     int add_number = 0;
     saved_lexeme_pointer = lexeme_pointer;
     while (HasLexeme()) {
@@ -2613,6 +2616,7 @@ bool Parser::Declarator_Itself(int& type_state, int& a, bool flag) {
     }
     std::string t_name = type_table.table_ID[type_state];
     for (int i = 1; i <= add_number; i++){
+        type_parameters.push(type_state);
         t_name += "*";
         if (!type_table.FindMember(t_name)){
             CreateType(t_name, type_state, type_table.table_names[type_table.table_ID[type_state]].second.get_pointer_degree());
@@ -2620,7 +2624,7 @@ bool Parser::Declarator_Itself(int& type_state, int& a, bool flag) {
         type_state = type_table.table_names[t_name].first;
     }
     fun.get_var_table()[var_name] = 0;
-    fun.get_var_parameters_table()[var_name] = std::make_tuple(type_state, var_parameters, add_number == 0);
+    fun.get_var_parameters_table()[var_name] = std::make_tuple(type_state, var_parameters, type_parameters, add_number == 0);
     fun.get_type_matching_table()[var_name] = type_state;
     a = type_state;
     commands.emplace_back(new Push(lex));
